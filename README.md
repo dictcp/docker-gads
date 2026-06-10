@@ -128,3 +128,5 @@ DOCKERHUB_TOKEN
 ```
 
 By default it builds upstream GADS `v5.6.0`. You can override the release tag from the manual workflow dispatch input.
+
+If the Docker Hub secrets are not configured, the workflow still performs a multi-platform build check but skips publishing.
