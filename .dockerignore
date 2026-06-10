@@ -1,0 +1,7 @@
+.git
+.github
+README.md
+compose.yaml
+mongo-init
+.env
+.env.example

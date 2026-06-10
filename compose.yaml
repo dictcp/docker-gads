@@ -1,0 +1,83 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: gads-mongo
+    network_mode: host
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all", "--port", "${GADS_MONGO_PORT:-27017}"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  init:
+    image: mongo:6.0
+    container_name: gads-init
+    network_mode: host
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      GADS_MONGO_PORT: ${GADS_MONGO_PORT:-27017}
+      GADS_PROVIDER_NICKNAME: ${GADS_PROVIDER_NICKNAME:-DockerProvider}
+      GADS_PROVIDER_HOST: ${GADS_PROVIDER_HOST:-127.0.0.1}
+      GADS_PROVIDER_PORT: ${GADS_PROVIDER_PORT:-11000}
+      GADS_SEED_DEVICE: ${GADS_SEED_DEVICE:-false}
+      GADS_DEVICE_UDID: ${GADS_DEVICE_UDID:-}
+      GADS_DEVICE_NAME: ${GADS_DEVICE_NAME:-Android Device}
+      GADS_DEVICE_OS_VERSION: ${GADS_DEVICE_OS_VERSION:-13}
+      GADS_DEVICE_SCREEN_WIDTH: ${GADS_DEVICE_SCREEN_WIDTH:-720}
+      GADS_DEVICE_SCREEN_HEIGHT: ${GADS_DEVICE_SCREEN_HEIGHT:-1650}
+      GADS_DEVICE_STREAM_TYPE: ${GADS_DEVICE_STREAM_TYPE:-mjpeg}
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    command:
+      - mongosh
+      - mongodb://127.0.0.1:${GADS_MONGO_PORT:-27017}/gads
+      - /docker-entrypoint-initdb.d/seed-gads.js
+    restart: "no"
+
+  hub:
+    image: dictcp/gads:${GADS_IMAGE_TAG:-latest}
+    container_name: gads-hub
+    network_mode: host
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    command:
+      - hub
+      - --host-address=${GADS_HUB_HOST:-127.0.0.1}
+      - --port=${GADS_HUB_PORT:-10000}
+      - --mongo-db=127.0.0.1:${GADS_MONGO_PORT:-27017}
+      - --auth=${GADS_AUTH:-false}
+
+  provider:
+    image: dictcp/gads:${GADS_IMAGE_TAG:-latest}
+    container_name: gads-provider
+    network_mode: host
+    privileged: true
+    depends_on:
+      hub:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - ${HOME}/.android:/root/.android:ro
+      - provider-data:/var/lib/gads-provider
+    environment:
+      ADB_VENDOR_KEYS: /root/.android
+    command:
+      - provider
+      - --nickname=${GADS_PROVIDER_NICKNAME:-DockerProvider}
+      - --provider-folder=/var/lib/gads-provider
+      - --hub=http://127.0.0.1:${GADS_HUB_PORT:-10000}
+      - --mongo-db=127.0.0.1:${GADS_MONGO_PORT:-27017}
+      - --log-level=${GADS_PROVIDER_LOG_LEVEL:-info}
+
+volumes:
+  mongo-data:
+  provider-data:
