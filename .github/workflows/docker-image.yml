@@ -14,10 +14,9 @@ on:
         default: "v5.6.0"
 
 env:
-  IMAGE_NAME: dictcp/gads
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/dictcp/gads
   DEFAULT_GADS_VERSION: v5.6.0
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
 jobs:
   docker:
@@ -45,12 +44,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ env.DOCKERHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker metadata
         id: meta
@@ -68,7 +68,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+          push: ${{ github.event_name != 'pull_request' }}
           build-args: |
             GADS_VERSION=${{ steps.version.outputs.gads_version }}
           tags: ${{ steps.meta.outputs.tags }}

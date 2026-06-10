@@ -5,7 +5,7 @@ Docker packaging for [shamanec/GADS](https://github.com/shamanec/GADS).
 The image is published as:
 
 ```text
-dictcp/gads
+ghcr.io/dictcp/gads
 ```
 
 Supported platforms:
@@ -111,22 +111,13 @@ docker compose down -v
 ## Build Locally
 
 ```bash
-docker build -t dictcp/gads:local --build-arg GADS_VERSION=v5.6.0 .
+docker build -t ghcr.io/dictcp/gads:local --build-arg GADS_VERSION=v5.6.0 .
 ```
 
 The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI.
 
 ## Publishing
 
-The GitHub Actions workflow builds and pushes multi-arch images to Docker Hub.
-
-Required repository secrets:
-
-```text
-DOCKERHUB_USERNAME
-DOCKERHUB_TOKEN
-```
+The GitHub Actions workflow builds and pushes multi-arch images to GitHub Container Registry using `GITHUB_TOKEN`.
 
 By default it builds upstream GADS `v5.6.0`. You can override the release tag from the manual workflow dispatch input.
-
-If the Docker Hub secrets are not configured, the workflow still performs a multi-platform build check but skips publishing.
