@@ -1,6 +1,6 @@
 # docker-gads
 
-<img width="1091" height="745" alt="Screenshot 2026-06-10 at 14 33 42" src="https://github.com/user-attachments/assets/79ed1e2b-3f96-445d-a0d2-d6d4b164a03a" />
+<img width="1446" height="1054" alt="GADS Screenshot" src="./gads-screenshot.jpg" />
 
 Docker packaging for [shamanec/GADS](https://github.com/shamanec/GADS).
 
