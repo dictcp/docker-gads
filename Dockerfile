@@ -1,6 +1,8 @@
-ARG GADS_VERSION=v5.6.0
+ARG GADS_VERSION=v6.1.0
 
 FROM golang:1.23-bookworm AS builder
+# Honor dependency Go minimums without changing the floating base-image selector.
+ENV GOTOOLCHAIN=auto
 ARG GADS_VERSION
 
 RUN apt-get update \
@@ -18,7 +20,24 @@ RUN mkdir -p /src/hub-ui \
     && unzip -q /tmp/ui-files.zip -d /src/hub-ui \
     && rm /tmp/ui-files.zip
 
-RUN go mod download
+# Refresh vulnerable modules bundled by the upstream source release.
+RUN go get \
+        github.com/danielpaulus/go-ios@v1.3.2 \
+        github.com/gin-contrib/cors@v1.7.9 \
+        github.com/gin-gonic/gin@v1.12.0 \
+        github.com/klauspost/compress@v1.20.3 \
+        github.com/quic-go/quic-go@v0.64.1 \
+        golang.org/x/crypto@v0.58.0 \
+        golang.org/x/net@v0.61.0 \
+        golang.org/x/text@v0.43.0 \
+    && go get toolchain@patch \
+    && go mod tidy \
+    && go mod download
+
+RUN go get go.mongodb.org/mongo-driver@v1.17.10 && go mod tidy
+
+# GADS 6 source archives omit generated Swagger docs imported by the hub.
+RUN go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g hub/hub.go -o docs
 
 RUN CGO_ENABLED=0 go build \
     -tags ui \

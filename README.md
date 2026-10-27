@@ -17,6 +17,8 @@ linux/amd64
 linux/arm64
 ```
 
+Existing deployments: read [the GADS 6 compatibility notes](docs/GADS-UPGRADE.md) before upgrading.
+
 ## Quick Start
 
 Install Docker Compose, connect an Android device with USB debugging enabled, then run:
@@ -113,13 +115,17 @@ docker compose down -v
 ## Build Locally
 
 ```bash
-docker build -t ghcr.io/dictcp/gads:local --build-arg GADS_VERSION=v5.6.0 .
+docker build -t ghcr.io/dictcp/gads:local --build-arg GADS_VERSION=v6.1.0 .
 ```
 
-The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI.
+The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI. The original floating builder/runtime/MongoDB image channels remain unchanged. Go automatically downloads the compiler required by the updated module graph and selects its current patch; see [security validation](DEPENDENCY-SECURITY.md).
 
 ## Publishing
 
 The GitHub Actions workflow builds and pushes multi-arch images to GitHub Container Registry using `GITHUB_TOKEN`.
 
-By default it builds upstream GADS `v5.6.0`. You can override the release tag from the manual workflow dispatch input.
+By default it builds upstream GADS `v6.1.0`. You can override the release tag from the manual workflow dispatch input.
+
+## Dependency refresh
+
+The build pins current same-major security updates for upstream Go modules, including go-ios 1.3.2 to support the newer QUIC connection API. Image scans still report unfixed OS/module advisories; an updated build is not a guarantee that all findings are resolved. Review the upgrade PR security evidence before deployment.
