@@ -1,6 +1,8 @@
 ARG GADS_VERSION=v5.7.0
 
-FROM golang:1.27.3-bookworm AS builder
+FROM golang:1.23-bookworm AS builder
+# Honor dependency Go minimums without changing the floating base-image selector.
+ENV GOTOOLCHAIN=auto
 ARG GADS_VERSION
 
 RUN apt-get update \
@@ -29,6 +31,7 @@ RUN go get \
         golang.org/x/crypto@v0.58.0 \
         golang.org/x/net@v0.61.0 \
         golang.org/x/text@v0.43.0 \
+    && go get toolchain@patch \
     && go mod tidy \
     && go mod download
 
@@ -37,7 +40,7 @@ RUN CGO_ENABLED=0 go build \
     -ldflags="-s -w -X main.AppVersion=${GADS_VERSION}" \
     -o /out/GADS .
 
-FROM debian:12.15-slim
+FROM debian:bookworm-slim
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

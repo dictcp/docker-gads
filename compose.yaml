@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:6.0.28
+    image: mongo:6.0
     container_name: gads-mongo
     network_mode: host
     restart: unless-stopped
@@ -14,7 +14,7 @@ services:
       retries: 30
 
   init:
-    image: mongo:6.0.28
+    image: mongo:6.0
     container_name: gads-init
     network_mode: host
     depends_on:

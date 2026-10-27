@@ -116,7 +116,7 @@ docker compose down -v
 docker build -t ghcr.io/dictcp/gads:local --build-arg GADS_VERSION=v5.7.0 .
 ```
 
-The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI.
+The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI. The original floating builder/runtime/MongoDB image channels remain unchanged. Go automatically downloads the compiler required by the updated module graph and selects its current patch; see [security validation](DEPENDENCY-SECURITY.md).
 
 ## Publishing
 
