@@ -17,7 +17,7 @@ linux/amd64
 linux/arm64
 ```
 
-Existing deployments: read [the MongoDB/GADS migration guide](docs/MONGODB-UPGRADE.md) before starting this version against existing data.
+Existing deployments: read [the GADS 6 compatibility notes](docs/GADS-UPGRADE.md) before upgrading.
 
 ## Quick Start
 
@@ -118,7 +118,7 @@ docker compose down -v
 docker build -t ghcr.io/dictcp/gads:local --build-arg GADS_VERSION=v6.1.0 .
 ```
 
-The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI.
+The Dockerfile downloads the upstream GADS release source and the matching release UI asset, then builds GADS with the embedded UI. The original floating builder/runtime/MongoDB image channels remain unchanged. Go automatically downloads the compiler required by the updated module graph and selects its current patch; see [security validation](DEPENDENCY-SECURITY.md).
 
 ## Publishing
 
